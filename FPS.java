@@ -1,6 +1,9 @@
-package FP;
+package com.ptcmanaged.FP;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
@@ -8,12 +11,15 @@ import gnu.io.SerialPort;
 
 public class FPS {
 	
+	private static final Logger LOG = LoggerFactory.getLogger(FPS.class);
+	
 	InputStream in;
 	OutputStream out;
 	CommPortIdentifier portIdentifier; 
 	CommPort commPort;
 	public Boolean open (String portName) throws Exception
     {
+		LOG.info("Checking the usgae of port requested");
         portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
         if (portIdentifier.isCurrentlyOwned())
         {
@@ -25,11 +31,18 @@ public class FPS {
             commPort = portIdentifier.open(this.getClass().getName(),2000);
             if (commPort instanceof SerialPort)
             {
+            	LOG.info("SerialPort object being created");
                 SerialPort serialPort = (SerialPort) commPort;
+                
+                LOG.info("Setting SerialPort object");
                 serialPort.setSerialPortParams(9600,SerialPort.DATABITS_8,SerialPort.STOPBITS_1,SerialPort.PARITY_NONE);
                 
                 in = serialPort.getInputStream();
+                
+                LOG.info("Writing input stream of serial port");
                 out = serialPort.getOutputStream();
+                
+                LOG.info("Writing output stream of serial port");
                 
                 //FPS Open
                 Open();
@@ -397,6 +410,7 @@ public class FPS {
 	
 	public void SendRequest(short cmd) throws Exception
 	{
+		LOG.info("Sending Request");
 		purgeresponse();
 		this.out.write(GetPacketBytes(cmd));
 		this.out.write("\n".getBytes());
@@ -404,6 +418,7 @@ public class FPS {
 	
 	public Boolean LEDON() throws Exception
 	{
+		 LOG.info("In LEDON");
 		Parameter = new byte[]{0x01,0x00,0x00,0x00};
 		SendRequest(Commands.CmosLed);
 		byte[] res = GetResponse(0);
